@@ -3,8 +3,10 @@ using System.Text.Json;
 using Dashboard.Api.Contracts;
 using Dashboard.Core.Abstractions;
 using Dashboard.Core.Entities;
+using Dashboard.PowerShell;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 
 namespace Dashboard.Api.Controllers;
 
@@ -13,7 +15,9 @@ namespace Dashboard.Api.Controllers;
 [Route("api/v1/executions")]
 public sealed class ExecutionsController(
     IExecutionRepository executions,
-    IScriptRepository scripts) : ControllerBase
+    IScriptRepository scripts,
+    ExecutionRunner runner,
+    IHostApplicationLifetime lifetime) : ControllerBase
 {
     [HttpPost]
     [Authorize(Roles = "Admin,Operator")]
@@ -29,7 +33,10 @@ public sealed class ExecutionsController(
 
         await executions.AddAsync(exec, ct);
 
-        // Phase 3 wires real PS execution. For Phase 1 the execution stays Pending — a stub.
+        // Fire-and-forget background execution with its own scope (Variant A per docs/02-ARCHITECTURE.md §3.3).
+        // Uses the application-lifetime stopping token, NOT the request-scoped ct.
+        _ = Task.Run(() => runner.RunAsync(exec.Id, lifetime.ApplicationStopping), CancellationToken.None);
+
         return Accepted($"/api/v1/executions/{exec.Id}", ToDto(exec));
     }
 

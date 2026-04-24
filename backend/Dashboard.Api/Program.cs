@@ -3,6 +3,7 @@ using Dashboard.Api.Middleware;
 using Dashboard.Core.Abstractions;
 using Dashboard.Infrastructure;
 using Dashboard.Infrastructure.Persistence;
+using Dashboard.PowerShell;
 using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,7 @@ builder.Host.UseSerilog((context, cfg) => cfg
 
 // ---- Core wiring ----
 builder.Services.AddDashboardInfrastructure(builder.Configuration);
+builder.Services.AddDashboardPowerShell(builder.Configuration);
 
 // ---- FluentValidation ----
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();

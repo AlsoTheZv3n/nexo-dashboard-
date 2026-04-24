@@ -1,0 +1,13 @@
+{
+  "name": "Get-SystemHealth",
+  "description": "Prüft System-Gesundheit (freier Plattenplatz pro Laufwerk).",
+  "parameters": [
+    {
+      "name": "MinFreeGB",
+      "type": "int",
+      "default": 10,
+      "required": false,
+      "description": "Mindestens freie Gigabytes pro Laufwerk, sonst Status=Warning."
+    }
+  ]
+}

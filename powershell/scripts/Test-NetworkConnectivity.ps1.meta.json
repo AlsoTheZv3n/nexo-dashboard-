@@ -1,0 +1,8 @@
+{
+  "name": "Test-NetworkConnectivity",
+  "description": "TCP-Ping: testet die Erreichbarkeit eines Hosts:Port.",
+  "parameters": [
+    { "name": "Target",    "type": "string", "required": true,  "description": "host oder host:port (Default-Port: 443)." },
+    { "name": "TimeoutMs", "type": "int",    "required": false, "default": 2000, "description": "Timeout in Millisekunden." }
+  ]
+}
