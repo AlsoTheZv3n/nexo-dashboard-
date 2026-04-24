@@ -25,6 +25,9 @@ public sealed class User
     public void RecordLogin(DateTimeOffset when) => LastLoginAt = when;
 
     public void Deactivate() => IsActive = false;
+    public void Activate() => IsActive = true;
+
+    public void ChangeRole(UserRole role) => Role = role;
 
     public void ChangePassword(string newHash)
     {

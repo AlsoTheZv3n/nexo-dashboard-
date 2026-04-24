@@ -24,6 +24,11 @@ public static class DependencyInjection
         services.AddScoped<IScriptRepository, ScriptRepository>();
         services.AddScoped<IExecutionRepository, ExecutionRepository>();
         services.AddScoped<IMetricsRepository, MetricsRepository>();
+        services.AddScoped<IApiKeyRepository, ApiKeyRepository>();
+        services.AddScoped<IAlertRuleRepository, AlertRuleRepository>();
+        services.AddScoped<IAlertIncidentRepository, AlertIncidentRepository>();
+        services.AddScoped<IScheduleRepository, ScheduleRepository>();
+        services.AddScoped<IAuditLogRepository, AuditLogRepository>();
 
         services.AddSingleton<IClock, SystemClock>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
@@ -32,6 +37,7 @@ public static class DependencyInjection
         services.AddSingleton<ITokenService, JwtTokenService>();
 
         services.AddScoped<AuthService>();
+        services.AddScoped<AuditService>();
 
         return services;
     }

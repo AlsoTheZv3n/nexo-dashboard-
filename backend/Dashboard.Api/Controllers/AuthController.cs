@@ -7,15 +7,23 @@ namespace Dashboard.Api.Controllers;
 
 [ApiController]
 [Route("api/v1/auth")]
-public sealed class AuthController(AuthService auth) : ControllerBase
+public sealed class AuthController(AuthService auth, AuditService audit) : ControllerBase
 {
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequest req, CancellationToken ct)
     {
         var result = await auth.LoginAsync(req.Username, req.Password, ct);
-        if (result.IsFailure) return ProblemForError(result.Error);
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        if (result.IsFailure)
+        {
+            await audit.RecordAsync(null, "auth.login_failed", "User", req.Username, null, ip, ct);
+            return ProblemForError(result.Error);
+        }
 
         var (user, tokens) = result.Value!;
+        await audit.RecordAsync(user.Id, "auth.login", "User", user.Id.ToString(), null, ip, ct);
+
         return Ok(new LoginResponse(
             tokens.AccessToken,
             tokens.RefreshToken,

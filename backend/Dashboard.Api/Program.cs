@@ -1,4 +1,5 @@
 using Dashboard.Api.Auth;
+using Dashboard.Api.BackgroundServices;
 using Dashboard.Api.Middleware;
 using Dashboard.Api.Observability;
 using Dashboard.Core.Abstractions;
@@ -23,13 +24,39 @@ builder.AddDashboardObservability();
 builder.Services.AddDashboardInfrastructure(builder.Configuration);
 builder.Services.AddDashboardPowerShell(builder.Configuration);
 
+// ---- Background services + HTTP client (skipped in integration tests) ----
+builder.Services.AddHttpClient();
+if (!builder.Environment.IsEnvironment("IntegrationTests"))
+{
+    builder.Services.AddHostedService<AlertEvaluatorService>();
+    builder.Services.AddHostedService<ScheduleWorkerService>();
+}
+
 // ---- FluentValidation ----
 builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-// ---- JWT Auth ----
+// ---- Authentication (JWT default, ApiKey fallback) ----
 // TokenValidationParameters are wired late via IPostConfigureOptions so that
 // test hosts can still override the Jwt:* configuration in ConfigureWebHost.
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultScheme = "MultiScheme";
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer()
+    .AddScheme<Microsoft.AspNetCore.Authentication.AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+        ApiKeyAuthentication.Scheme, _ => { })
+    .AddPolicyScheme("MultiScheme", "JWT or ApiKey", options =>
+    {
+        options.ForwardDefaultSelector = context =>
+        {
+            var auth = context.Request.Headers.Authorization.FirstOrDefault();
+            return auth is not null && auth.StartsWith(ApiKeyAuthentication.HeaderPrefix, StringComparison.Ordinal)
+                ? ApiKeyAuthentication.Scheme
+                : JwtBearerDefaults.AuthenticationScheme;
+        };
+    });
 builder.Services.AddSingleton<IPostConfigureOptions<JwtBearerOptions>, ConfigureJwtBearerOptions>();
 builder.Services.AddAuthorization();
 
@@ -109,6 +136,13 @@ if (!app.Environment.IsEnvironment("IntegrationTests"))
     var hasher = scope.ServiceProvider.GetRequiredService<IPasswordHasher>();
     await db.Database.MigrateAsync();
     await DbSeeder.SeedAsync(db, hasher);
+
+    // Opt-in demo data: see docs/MOCK_DATA.md. Off by default in prod; turn on in dev compose.
+    if (app.Configuration.GetValue("Demo:SeedEnabled", defaultValue: false))
+    {
+        var clock = scope.ServiceProvider.GetRequiredService<IClock>();
+        await DemoDataSeeder.SeedAsync(db, clock);
+    }
 }
 
 app.Run();

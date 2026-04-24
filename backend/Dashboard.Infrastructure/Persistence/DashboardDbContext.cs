@@ -10,6 +10,10 @@ public sealed class DashboardDbContext(DbContextOptions<DashboardDbContext> opti
     public DbSet<PsExecution> Executions => Set<PsExecution>();
     public DbSet<Metric> Metrics => Set<Metric>();
     public DbSet<AuditLogEntry> AuditLog => Set<AuditLogEntry>();
+    public DbSet<ApiKey> ApiKeys => Set<ApiKey>();
+    public DbSet<AlertRule> AlertRules => Set<AlertRule>();
+    public DbSet<AlertIncident> AlertIncidents => Set<AlertIncident>();
+    public DbSet<ScheduledExecution> ScheduledExecutions => Set<ScheduledExecution>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

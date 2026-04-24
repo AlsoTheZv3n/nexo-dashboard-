@@ -38,6 +38,8 @@ services:
       Jwt__RefreshTokenDays: 7
       PowerShell__ScriptsDirectory: /app/scripts
       PowerShell__TimeoutSeconds: 60
+      # Demo data: keep ON locally so the dashboard isn't empty. See docs/MOCK_DATA.md.
+      Demo__SeedEnabled: "true"
     ports:
       - "5000:8080"
 

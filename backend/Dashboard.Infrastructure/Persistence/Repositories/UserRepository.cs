@@ -6,6 +6,9 @@ namespace Dashboard.Infrastructure.Persistence.Repositories;
 
 public sealed class UserRepository(DashboardDbContext db) : IUserRepository
 {
+    public async Task<IReadOnlyList<User>> GetAllAsync(CancellationToken ct = default) =>
+        await db.Users.AsNoTracking().OrderBy(u => u.Username).ToListAsync(ct);
+
     public Task<User?> GetByUsernameAsync(string username, CancellationToken ct = default) =>
         db.Users.SingleOrDefaultAsync(u => u.Username == username, ct);
 
