@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: dashboard-prod
+
+resources:
+  - ../../base
+
+# Prod secrets are created out-of-band:
+#   kubectl -n dashboard-prod create secret generic postgres-secret \
+#     --from-literal=POSTGRES_USER=... --from-literal=POSTGRES_PASSWORD=... --from-literal=POSTGRES_DB=...
+#   kubectl -n dashboard-prod create secret generic api-secret \
+#     --from-literal=ConnectionStrings__Default=... --from-literal=Jwt__SigningKey=...
+#
+# The image tags below MUST be bumped to an immutable SHA by the deploy workflow.
+# Never keep "latest" in prod.
+
+images:
+  - name: ghcr.io/nexo-dashboard/api
+    newTag: REPLACE_WITH_SHA
+  - name: ghcr.io/nexo-dashboard/frontend
+    newTag: REPLACE_WITH_SHA
+
+replicas:
+  - name: api
+    count: 2
+
+patches:
+  - target:
+      kind: Ingress
+      name: dashboard
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: dashboard.example.ch

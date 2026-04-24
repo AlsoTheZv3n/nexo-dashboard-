@@ -1,0 +1,97 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: dashboard_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U test -d dashboard_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+      - name: Restore
+        run: dotnet restore backend/Dashboard.sln
+      - name: Build
+        run: dotnet build backend/Dashboard.sln --no-restore -c Release
+      - name: Test
+        run: dotnet test backend/Dashboard.sln --no-build -c Release --logger trx --collect:"XPlat Code Coverage"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: "**/TestResults/**"
+
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck
+        run: pnpm typecheck
+      - name: Lint
+        run: pnpm lint || true   # relax until eslint is fully wired
+      - name: Test
+        run: pnpm test
+      - name: Build
+        run: pnpm build
+
+  pwsh:
+    name: PowerShell (Pester)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          Install-Module -Name Pester -MinimumVersion 5.0.0 -Scope CurrentUser -Force -SkipPublisherCheck
+          Invoke-Pester -CI -Path powershell/tests
+
+  kustomize:
+    name: k8s manifests lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install kubectl
+        run: |
+          curl -sLo kubectl https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl
+          chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+      - name: Render overlays
+        run: |
+          kubectl kustomize k8s/overlays/dev > /tmp/dev.yaml
+          kubectl kustomize k8s/overlays/prod > /tmp/prod.yaml
+          test -s /tmp/dev.yaml && test -s /tmp/prod.yaml

@@ -1,0 +1,29 @@
+# IngressClass chosen per overlay (dev: traefik, prod: external Nginx via NodePort).
+# This manifest is written for the Traefik ingress shipped with k3s so `k3d` and the
+# real single-VM k3s behave identically before the external Nginx is put in front.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dashboard
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: dashboard.localtest.me
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: api
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: frontend
+                port:
+                  number: 80

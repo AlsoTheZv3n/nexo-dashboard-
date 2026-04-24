@@ -1,0 +1,55 @@
+# Developer stack: Postgres + API + Frontend (Nginx). Vite dev-server is the
+# recommended UI workflow; this compose file is for "everything against real
+# containers" smoke tests.
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dashboard
+      POSTGRES_PASSWORD: dev
+      POSTGRES_DB: dashboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dashboard -d dashboard"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__Default: "Host=postgres;Port=5432;Database=dashboard;Username=dashboard;Password=dev"
+      Jwt__Issuer: nexo-dashboard
+      Jwt__Audience: nexo-dashboard
+      Jwt__SigningKey: "dev_only_signing_key_min_32_chars_________________"
+      Jwt__AccessTokenMinutes: 15
+      Jwt__RefreshTokenDays: 7
+      PowerShell__ScriptsDirectory: /app/scripts
+      PowerShell__TimeoutSeconds: 60
+    ports:
+      - "5000:8080"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend.Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:
