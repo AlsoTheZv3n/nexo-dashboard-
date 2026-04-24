@@ -64,11 +64,11 @@ Quelle der Wahrheit: [docs/06-PHASES.md](docs/06-PHASES.md). Jede Phase hat ein 
 
 Aktueller Stand (aktualisieren, wenn Phasen abgeschlossen werden):
 - [x] Phase 0 — Foundation / Repo-Setup
-- [ ] Phase 1 — Backend MVP (API + DB)
-- [ ] Phase 2 — Frontend MVP
-- [ ] Phase 3 — PowerShell-Integration
-- [ ] Phase 4 — Containerisierung + lokales k3s
-- [ ] Phase 5 — Prod-Deployment (VM + Nginx + Runner)
+- [x] Phase 1 — Backend MVP (API + DB) — 35 tests (23 unit + 12 integration via Testcontainers)
+- [x] Phase 2 — Frontend MVP — 11 Vitest/RTL tests, typecheck + build green
+- [x] Phase 3 — PowerShell-Integration — 5 xUnit + 7 Pester tests
+- [x] Phase 4 — Containerisierung + lokales k3s — Dockerfiles, compose, Kustomize base+overlays, CI
+- [ ] Phase 5 — Prod-Deployment (VM + Nginx + Runner) — deploy/nginx/dashboard.conf written, runner install pending
 - [ ] Phase 6 — Charts + Metrics
 - [ ] Phase 7 — Observability + Härtung
 

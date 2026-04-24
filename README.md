@@ -2,16 +2,16 @@
 
 Ein Dashboard auf **.NET 9** + **React 18 + shadcn/ui**, mit PowerShell-Integration, containerisiert via Docker, orchestriert über **k3s** auf einer Single-VM, gefrontet durch **Nginx** mit Let's-Encrypt-SSL.
 
-| Ebene      | Status    |
-|------------|-----------|
-| Phase 0 — Foundation       | ✅ |
-| Phase 1 — Backend MVP      | 🚧 |
-| Phase 2 — Frontend MVP     | ⏳ |
-| Phase 3 — PowerShell       | ⏳ |
-| Phase 4 — Container + k3s  | ⏳ |
-| Phase 5 — Prod-Deployment  | ⏳ |
-| Phase 6 — Charts + Metrics | ⏳ |
-| Phase 7 — Observability    | ⏳ |
+| Ebene      | Status | Notizen |
+|------------|--------|---------|
+| Phase 0 — Foundation       | ✅ | docs, gitignore, CLAUDE.md |
+| Phase 1 — Backend MVP      | ✅ | 35 tests grün (23 unit + 12 integration mit Testcontainers Postgres) |
+| Phase 2 — Frontend MVP     | ✅ | 11 Vitest tests, typecheck + prod build grün |
+| Phase 3 — PowerShell       | ✅ | 5 xUnit + 7 Pester tests, 3 Beispiel-Scripts |
+| Phase 4 — Container + k3s  | ✅ | Dockerfiles, compose, Kustomize base+dev/prod, CI workflow |
+| Phase 5 — Prod-Deployment  | ⏳ | Nginx-Site committed; Runner-Install + SSL pending |
+| Phase 6 — Charts + Metrics | ⏳ | |
+| Phase 7 — Observability    | ⏳ | |
 
 ## Docs
 
