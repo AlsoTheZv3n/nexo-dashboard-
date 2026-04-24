@@ -68,7 +68,7 @@ Aktueller Stand (aktualisieren, wenn Phasen abgeschlossen werden):
 - [x] Phase 2 — Frontend MVP — 11 Vitest/RTL tests, typecheck + build green
 - [x] Phase 3 — PowerShell-Integration — 5 xUnit + 7 Pester tests
 - [x] Phase 4 — Containerisierung + lokales k3s — Dockerfiles, compose, Kustomize base+overlays, CI
-- [ ] Phase 5 — Prod-Deployment (VM + Nginx + Runner) — deploy/nginx/dashboard.conf written, runner install pending
+- [x] Phase 5 — Prod-Deployment — `.github/workflows/deploy.yml` (build+push GHCR → Trivy gate → self-hosted `kubectl apply` with SHA image pins + health check + rollback-on-failure), `deploy/vm-bootstrap.sh` (Ubuntu 24 → UFW+fail2ban+k3s+Nginx+certbot); Runner install still requires an out-of-band registration token (documented in the bootstrap script + RUNBOOK)
 - [x] Phase 6 — Charts + Metrics — metrics API (POST/bulk/timeseries/summary/status-breakdown/top-scripts), auto-emit on execution finish, Recharts dashboard (Area/Pie/Bar + KPI cards + date range + auto-refresh); 56 backend + 22 frontend + 10 Pester tests
 - [x] Phase 7 — Observability + Härtung — Serilog CLEF JSON in non-dev, request-logging with user/correlation enrichers + Authorization redaction, OpenTelemetry (AspNetCore + HttpClient + EFCore + Runtime) with Prometheus `/metrics` endpoint, k8s observability overlay (Prometheus + Loki + Promtail + Grafana), nightly pg_dump CronJob, CI gates (Trivy HIGH/CRITICAL + `dotnet list --vulnerable` + `pnpm audit --prod`), [docs/RUNBOOK.md](docs/RUNBOOK.md); 58 backend + 22 frontend + 10 Pester tests
 

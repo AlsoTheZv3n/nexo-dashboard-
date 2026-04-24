@@ -1,0 +1,168 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Git ref to deploy (SHA, tag, branch). Defaults to the workflow ref."
+        required: false
+
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false   # never abort a deploy mid-flight
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  REPO_LOWER: ${{ github.repository }}   # e.g. AlsoTheZv3n/nexo-dashboard-
+  NAMESPACE: dashboard-prod
+
+jobs:
+  # ---------- 1. Build & push images on GitHub-hosted runners ----------
+  build-images:
+    name: Build + push images
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.sha.outputs.sha }}
+      api_image:      ${{ steps.tags.outputs.api_image }}
+      frontend_image: ${{ steps.tags.outputs.frontend_image }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - id: sha
+        run: echo "sha=$(git rev-parse --short=12 HEAD)" >> "$GITHUB_OUTPUT"
+
+      - id: tags
+        run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "api_image=${{ env.REGISTRY }}/${owner}/nexo-dashboard-api" >> "$GITHUB_OUTPUT"
+          echo "frontend_image=${{ env.REGISTRY }}/${owner}/nexo-dashboard-frontend" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build + push API
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/api.Dockerfile
+          tags: |
+            ${{ steps.tags.outputs.api_image }}:${{ steps.sha.outputs.sha }}
+            ${{ steps.tags.outputs.api_image }}:main
+          push: true
+          cache-from: type=gha,scope=api
+          cache-to:   type=gha,scope=api,mode=max
+          provenance: false
+
+      - name: Build + push Frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/frontend.Dockerfile
+          tags: |
+            ${{ steps.tags.outputs.frontend_image }}:${{ steps.sha.outputs.sha }}
+            ${{ steps.tags.outputs.frontend_image }}:main
+          push: true
+          cache-from: type=gha,scope=frontend
+          cache-to:   type=gha,scope=frontend,mode=max
+          provenance: false
+
+  # ---------- 2. Security gate (can't block the build but blocks deploy) ----------
+  trivy-gate:
+    name: Trivy gate (HIGH/CRITICAL)
+    needs: build-images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-images.outputs.api_image }}:${{ needs.build-images.outputs.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+      - uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.build-images.outputs.frontend_image }}:${{ needs.build-images.outputs.sha }}
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true
+
+  # ---------- 3. Apply to the VM's k3s via the self-hosted runner ----------
+  deploy:
+    name: kubectl apply (self-hosted)
+    needs: [build-images, trivy-gate]
+    runs-on: [self-hosted, linux, prod]
+    timeout-minutes: 15
+    environment:
+      name: production
+      url: https://dashboard.example.ch
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+
+      - name: Install kubectl (if missing)
+        run: |
+          if ! command -v kubectl >/dev/null; then
+            curl -sLo kubectl https://dl.k8s.io/release/v1.31.0/bin/linux/amd64/kubectl
+            chmod +x kubectl && sudo mv kubectl /usr/local/bin/
+          fi
+          kubectl version --client=true
+
+      - name: Pin image tags to the built SHA
+        working-directory: k8s/overlays/prod
+        run: |
+          set -e
+          sha='${{ needs.build-images.outputs.sha }}'
+          # Use kustomize edit so prod/kustomization.yaml is updated in-place only
+          # inside the runner's workspace (not committed back).
+          kubectl kustomize . > /dev/null   # sanity before the edit
+          sed -i \
+            -e "s|newTag: REPLACE_WITH_SHA|newTag: ${sha}|" \
+            -e "s|newTag: [a-f0-9]\{12\}|newTag: ${sha}|" \
+            kustomization.yaml
+          grep -n "newTag:" kustomization.yaml
+
+      - name: Render + dry-run on the live cluster
+        run: |
+          kubectl kustomize k8s/overlays/prod > /tmp/rendered.yaml
+          kubectl apply --dry-run=server -f /tmp/rendered.yaml
+
+      - name: Apply
+        run: kubectl apply -k k8s/overlays/prod
+
+      - name: Wait for rollouts
+        run: |
+          kubectl -n ${{ env.NAMESPACE }} rollout status deploy/api --timeout=5m
+          kubectl -n ${{ env.NAMESPACE }} rollout status deploy/frontend --timeout=5m
+
+      - name: Post-deploy health check
+        run: |
+          # Loopback through external Nginx so we catch ingress + TLS problems too
+          for i in 1 2 3 4 5; do
+            if curl -fsS --max-time 10 https://dashboard.example.ch/api/v1/health/ready; then
+              echo "Healthy."
+              exit 0
+            fi
+            echo "Not ready yet (attempt $i) …"; sleep 10
+          done
+          echo "::error::Health check failed after deploy"
+          exit 1
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          kubectl -n ${{ env.NAMESPACE }} rollout undo deploy/api || true
+          kubectl -n ${{ env.NAMESPACE }} rollout undo deploy/frontend || true

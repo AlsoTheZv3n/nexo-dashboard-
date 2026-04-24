@@ -17,8 +17,32 @@ public sealed class ExecutionsController(
     IExecutionRepository executions,
     IScriptRepository scripts,
     ExecutionRunner runner,
+    ExecutionCancellation cancellations,
     IHostApplicationLifetime lifetime) : ControllerBase
 {
+    [HttpPost("{id:guid}/cancel")]
+    [Authorize(Roles = "Admin,Operator")]
+    public async Task<IActionResult> Cancel(Guid id, CancellationToken ct)
+    {
+        var exec = await executions.GetByIdAsync(id, ct);
+        if (exec is null)
+            return Problem(statusCode: 404, title: "Execution.NotFound", detail: $"No execution with id {id}.");
+
+        if (exec.Status is not (ExecutionStatus.Pending or ExecutionStatus.Running))
+            return Problem(statusCode: 409, title: "Execution.NotCancellable",
+                detail: $"Execution is already in terminal state '{exec.Status}'.");
+
+        var signalled = cancellations.Cancel(id);
+        if (!signalled)
+        {
+            // Not currently running on this instance (multi-pod future or Pending never-started).
+            exec.MarkCancelled();
+            await executions.UpdateAsync(exec, ct);
+        }
+
+        return Accepted($"/api/v1/executions/{id}", ToDto(exec));
+    }
+
     [HttpPost]
     [Authorize(Roles = "Admin,Operator")]
     public async Task<IActionResult> Create([FromBody] CreateExecutionRequest req, CancellationToken ct)

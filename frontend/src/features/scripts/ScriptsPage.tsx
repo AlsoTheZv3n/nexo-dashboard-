@@ -1,17 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
 import { flexRender, getCoreRowModel, getFilteredRowModel, getSortedRowModel, useReactTable, type ColumnDef, type SortingState } from "@tanstack/react-table";
+import { Play } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/features/auth/AuthContext";
 import { fetchScripts, type Script } from "./api";
+import { RunScriptDialog } from "./RunScriptDialog";
 
 export function ScriptsPage() {
   const { data, isLoading, error } = useQuery({ queryKey: ["scripts"], queryFn: fetchScripts });
+  const { user } = useAuth();
+  const canRun = user?.role === "Admin" || user?.role === "Operator";
 
   const [globalFilter, setGlobalFilter] = useState("");
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [runTarget, setRunTarget] = useState<Script | null>(null);
 
   const columns = useMemo<ColumnDef<Script>[]>(
     () => [
@@ -30,8 +36,25 @@ export function ScriptsPage() {
         header: "Updated",
         cell: ({ row }) => new Date(row.original.updatedAt).toLocaleDateString(),
       },
+      {
+        id: "actions",
+        header: "",
+        enableSorting: false,
+        cell: ({ row }) =>
+          canRun ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => setRunTarget(row.original)}
+              aria-label={`Run ${row.original.name}`}
+            >
+              <Play className="mr-1 h-3.5 w-3.5" />
+              Run
+            </Button>
+          ) : null,
+      },
     ],
-    [],
+    [canRun],
   );
 
   const table = useReactTable({
@@ -111,6 +134,8 @@ export function ScriptsPage() {
           <Button variant="outline">View executions</Button>
         </Link>
       </div>
+
+      {runTarget && <RunScriptDialog script={runTarget} onClose={() => setRunTarget(null)} />}
     </div>
   );
 }

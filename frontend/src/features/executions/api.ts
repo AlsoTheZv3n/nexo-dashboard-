@@ -35,3 +35,8 @@ export async function createExecution(scriptId: string, parameters: Record<strin
   const r = await api.post<Execution>("/v1/executions", { scriptId, parameters });
   return r.data;
 }
+
+export async function cancelExecution(id: string): Promise<Execution> {
+  const r = await api.post<Execution>(`/v1/executions/${id}/cancel`);
+  return r.data;
+}

@@ -9,7 +9,7 @@ Ein Dashboard auf **.NET 9** + **React 18 + shadcn/ui**, mit PowerShell-Integrat
 | Phase 2 — Frontend MVP     | ✅ | 11 Vitest tests, typecheck + prod build grün |
 | Phase 3 — PowerShell       | ✅ | 5 xUnit + 7 Pester tests, 3 Beispiel-Scripts |
 | Phase 4 — Container + k3s  | ✅ | Dockerfiles, compose, Kustomize base+dev/prod, CI workflow |
-| Phase 5 — Prod-Deployment  | ⏳ | Nginx-Site committed; Runner-Install + SSL pending |
+| Phase 5 — Prod-Deployment  | ✅ | `deploy.yml` (build→GHCR→Trivy gate→self-hosted `kubectl apply` mit SHA-Pin + Health + Rollback), `deploy/vm-bootstrap.sh` für Ubuntu 24; Runner-Token noch einmalig manuell |
 | Phase 6 — Charts + Metrics | ✅ | Metrics-API, auto-emit bei Execution-Abschluss, Recharts-Dashboard (Area/Pie/Bar + KPIs + Range + Auto-Refresh); +16 backend, +11 frontend, +3 Pester tests |
 | Phase 7 — Observability    | ✅ | Serilog CLEF JSON + Request-Redaction, OpenTelemetry + `/metrics`, k8s Observability-Stack (Prometheus/Loki/Promtail/Grafana), Backup-CronJob, Trivy + `dotnet/pnpm audit` im CI, [RUNBOOK](docs/RUNBOOK.md) |
 

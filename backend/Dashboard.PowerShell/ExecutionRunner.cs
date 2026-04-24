@@ -16,17 +16,40 @@ public sealed class ExecutionRunner(
     IServiceScopeFactory scopes,
     IPowerShellExecutor executor,
     IOptions<PowerShellOptions> options,
+    ExecutionCancellation cancellations,
     ILogger<ExecutionRunner> logger)
 {
     private readonly PowerShellOptions _opts = options.Value;
 
     public async Task RunAsync(Guid executionId, CancellationToken cancellationToken = default)
     {
+        using var linkedCts = cancellations.Register(executionId, cancellationToken);
+        var ct = linkedCts.Token;
+
         using var scope = scopes.CreateScope();
         var executions = scope.ServiceProvider.GetRequiredService<IExecutionRepository>();
         var scripts = scope.ServiceProvider.GetRequiredService<IScriptRepository>();
         var metrics = scope.ServiceProvider.GetRequiredService<IMetricsRepository>();
         var clock = scope.ServiceProvider.GetRequiredService<IClock>();
+
+        try
+        {
+            await RunCoreAsync(executionId, executions, scripts, metrics, clock, ct);
+        }
+        finally
+        {
+            cancellations.Remove(executionId);
+        }
+    }
+
+    private async Task RunCoreAsync(
+        Guid executionId,
+        IExecutionRepository executions,
+        IScriptRepository scripts,
+        IMetricsRepository metrics,
+        IClock clock,
+        CancellationToken cancellationToken)
+    {
 
         var execution = await executions.GetByIdAsync(executionId, cancellationToken);
         if (execution is null)

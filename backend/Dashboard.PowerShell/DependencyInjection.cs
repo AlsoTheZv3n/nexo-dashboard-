@@ -10,6 +10,7 @@ public static class DependencyInjection
     {
         services.Configure<PowerShellOptions>(configuration.GetSection(PowerShellOptions.SectionName));
         services.AddSingleton<IPowerShellExecutor, PowerShellExecutor>();
+        services.AddSingleton<ExecutionCancellation>();
         services.AddSingleton<ExecutionRunner>();
         return services;
     }
