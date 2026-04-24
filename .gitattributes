@@ -1,0 +1,39 @@
+* text=auto eol=lf
+
+# Explicit LF for shell/script/config
+*.sh            text eol=lf
+*.bash          text eol=lf
+*.ps1           text eol=lf
+*.psm1          text eol=lf
+*.psd1          text eol=lf
+*.cs            text eol=lf
+*.csproj        text eol=lf
+*.sln           text eol=lf merge=union
+*.props         text eol=lf
+*.targets       text eol=lf
+*.json          text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.md            text eol=lf
+Dockerfile      text eol=lf
+*.Dockerfile    text eol=lf
+
+# Windows-only files keep CRLF
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+
+# Binaries
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.gif           binary
+*.ico           binary
+*.pdf           binary
+*.woff          binary
+*.woff2         binary
+*.ttf           binary
+*.eot           binary
+
+# Lockfiles: diff as text, but don't auto-resolve conflicts
+pnpm-lock.yaml  -diff -merge linguist-generated=true
+package-lock.json -diff -merge linguist-generated=true

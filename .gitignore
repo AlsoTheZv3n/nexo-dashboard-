@@ -1,0 +1,288 @@
+# ============================================================
+# Operations Dashboard — .gitignore
+# Combined for: .NET 9 + Node (Vite/React) + Docker + k8s + IDEs
+# ============================================================
+
+# --------------------------
+# OS
+# --------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# --------------------------
+# Editors / IDEs
+# --------------------------
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+*.code-workspace
+.history/
+
+# JetBrains (Rider / WebStorm / IntelliJ)
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# Visual Studio
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+# Sublime
+*.sublime-project
+*.sublime-workspace
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+\#*\#
+.\#*
+
+# --------------------------
+# .NET / C#
+# --------------------------
+bin/
+obj/
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio cache
+.vs/
+*.VisualState.xml
+TestResult.xml
+nunit-*.xml
+[Dd]ebugPS/
+[Rr]eleasePS/
+dlldata.c
+
+# NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+.nuget/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# MSBuild
+*.binlog
+*.tlog
+
+# Coverage
+*.coverage
+*.coveragexml
+coverage/
+TestResults/
+*.trx
+BenchmarkDotNet.Artifacts/
+
+# Publish
+publish/
+PublishProfiles/
+*.pubxml
+*.publishproj
+*.publishsettings
+
+# --------------------------
+# Node / pnpm / npm / yarn
+# --------------------------
+node_modules/
+jspm_packages/
+.pnp
+.pnp.js
+.pnp.cjs
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnpm-store/
+
+# Lockfile NICHT ignorieren (wir committen pnpm-lock.yaml)
+# pnpm-lock.yaml  <-- NICHT ignorieren
+# package-lock.json <-- NICHT ignorieren
+
+# --------------------------
+# Vite / Build-Outputs
+# --------------------------
+dist/
+dist-ssr/
+build/
+.vite/
+*.local
+
+# --------------------------
+# Env-Files (Secrets!)
+# --------------------------
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+!.env.*.example
+
+# --------------------------
+# Testing / Coverage
+# --------------------------
+coverage/
+*.lcov
+.nyc_output/
+playwright-report/
+playwright/.cache/
+test-results/
+blob-report/
+cypress/videos/
+cypress/screenshots/
+
+# --------------------------
+# Logs
+# --------------------------
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --------------------------
+# Docker / k8s
+# --------------------------
+*.tar
+*.tar.gz
+docker-compose.override.yml
+!docker-compose.override.yml.example
+
+# k8s secrets (falls mal lokal exportiert)
+*-secret.yaml
+!*-secret.yaml.example
+sealed-secrets/*.key
+
+# Kustomize generierte Files
+kustomize-build-output/
+
+# Helm
+charts/*.tgz
+charts/*/charts/
+requirements.lock
+
+# --------------------------
+# PowerShell
+# --------------------------
+# Ausführungs-Ergebnisse (nicht in Repo)
+pwsh-output/
+*.pester.log
+
+# --------------------------
+# Database / local data
+# --------------------------
+*.db
+*.sqlite
+*.sqlite3
+pgdata/
+postgres-data/
+data/
+backups/
+
+# --------------------------
+# Temp / Backup-Files
+# --------------------------
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.swp
+tmp/
+temp/
+scratch/
+
+# --------------------------
+# Security / Keys / Certs
+# --------------------------
+*.pem
+*.key
+*.crt
+*.cer
+*.pfx
+*.p12
+*.der
+secrets/
+!secrets/README.md
+
+# --------------------------
+# Tool-Outputs
+# --------------------------
+# Storybook
+storybook-static/
+
+# Turborepo
+.turbo/
+
+# Next.js (falls später genutzt)
+.next/
+out/
+
+# Nuxt (falls)
+.nuxt/
+
+# Python-Tools (z.B. pre-commit, Pester Cmdlets)
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+
+# --------------------------
+# Monitoring / Profiling
+# --------------------------
+.dotnet-watch*
+*.profdata
+profile-*.speedscope
+
+# --------------------------
+# Project-Specific
+# --------------------------
+# Lokale Script-Outputs, die man zufällig erzeugt
+powershell/output/
+scratch-scripts/
+
+# Frontend-Artefakte aus manuellen Builds
+frontend/dist-local/
+
+# k3d / kind local cluster state (selten, aber safety)
+.kube/cache/
