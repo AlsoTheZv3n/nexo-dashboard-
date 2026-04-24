@@ -12,3 +12,4 @@ resources:
   - api.yaml
   - frontend.yaml
   - ingress.yaml
+  - backup-cronjob.yaml

@@ -1,5 +1,6 @@
 using Dashboard.Api.Auth;
 using Dashboard.Api.Middleware;
+using Dashboard.Api.Observability;
 using Dashboard.Core.Abstractions;
 using Dashboard.Infrastructure;
 using Dashboard.Infrastructure.Persistence;
@@ -9,15 +10,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
-using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ---- Logging (Serilog) ----
-builder.Host.UseSerilog((context, cfg) => cfg
-    .ReadFrom.Configuration(context.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console());
+// ---- Logging (Serilog) — readable in Dev, CLEF JSON otherwise ----
+builder.Host.Configure();
+
+// ---- Observability (OpenTelemetry + Prometheus) ----
+builder.AddDashboardObservability();
 
 // ---- Core wiring ----
 builder.Services.AddDashboardInfrastructure(builder.Configuration);
@@ -93,12 +93,13 @@ if (app.Environment.IsDevelopment())
     app.UseCors("dev");
 }
 
-app.UseSerilogRequestLogging();
+app.UseDashboardRequestLogging();
 
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapDashboardMetricsEndpoint();
 
 // ---- Migrate + seed on startup (Dev/Staging only) ----
 if (!app.Environment.IsEnvironment("IntegrationTests"))

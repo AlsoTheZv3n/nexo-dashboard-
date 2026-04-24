@@ -11,7 +11,7 @@ Ein Dashboard auf **.NET 9** + **React 18 + shadcn/ui**, mit PowerShell-Integrat
 | Phase 4 — Container + k3s  | ✅ | Dockerfiles, compose, Kustomize base+dev/prod, CI workflow |
 | Phase 5 — Prod-Deployment  | ⏳ | Nginx-Site committed; Runner-Install + SSL pending |
 | Phase 6 — Charts + Metrics | ✅ | Metrics-API, auto-emit bei Execution-Abschluss, Recharts-Dashboard (Area/Pie/Bar + KPIs + Range + Auto-Refresh); +16 backend, +11 frontend, +3 Pester tests |
-| Phase 7 — Observability    | ⏳ | |
+| Phase 7 — Observability    | ✅ | Serilog CLEF JSON + Request-Redaction, OpenTelemetry + `/metrics`, k8s Observability-Stack (Prometheus/Loki/Promtail/Grafana), Backup-CronJob, Trivy + `dotnet/pnpm audit` im CI, [RUNBOOK](docs/RUNBOOK.md) |
 
 ## Docs
 
