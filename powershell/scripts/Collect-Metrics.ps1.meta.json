@@ -1,0 +1,8 @@
+{
+  "name": "Collect-Metrics",
+  "description": "Sammelt Host-Metriken (Disk-Free%, Process-Count) als Bulk-Payload für POST /api/v1/metrics/bulk.",
+  "parameters": [
+    { "name": "ApiBaseUrl",  "type": "string", "required": false, "default": "http://localhost:5000/api", "description": "API-Basis-URL." },
+    { "name": "AccessToken", "type": "string", "required": false, "description": "Bearer-Token. Wenn leer, wird das Payload nur auf stdout geschrieben (Dry-run)." }
+  ]
+}

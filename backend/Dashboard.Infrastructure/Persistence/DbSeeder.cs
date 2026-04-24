@@ -34,6 +34,12 @@ public static class DbSeeder
                 filePath: "Test-NetworkConnectivity.ps1",
                 metaJson: """{"parameters":[{"name":"Target","type":"string","required":true}]}""",
                 scriptHash: "seed-placeholder-3"));
+            db.Scripts.Add(new PsScript(
+                name: "Collect-Metrics",
+                description: "Sammelt Host-Metriken als Bulk-Payload für /api/v1/metrics/bulk.",
+                filePath: "Collect-Metrics.ps1",
+                metaJson: """{"parameters":[{"name":"ApiBaseUrl","type":"string","required":false},{"name":"AccessToken","type":"string","required":false}]}""",
+                scriptHash: "seed-placeholder-4"));
         }
 
         await db.SaveChangesAsync(ct);

@@ -69,7 +69,7 @@ Aktueller Stand (aktualisieren, wenn Phasen abgeschlossen werden):
 - [x] Phase 3 — PowerShell-Integration — 5 xUnit + 7 Pester tests
 - [x] Phase 4 — Containerisierung + lokales k3s — Dockerfiles, compose, Kustomize base+overlays, CI
 - [ ] Phase 5 — Prod-Deployment (VM + Nginx + Runner) — deploy/nginx/dashboard.conf written, runner install pending
-- [ ] Phase 6 — Charts + Metrics
+- [x] Phase 6 — Charts + Metrics — metrics API (POST/bulk/timeseries/summary/status-breakdown/top-scripts), auto-emit on execution finish, Recharts dashboard (Area/Pie/Bar + KPI cards + date range + auto-refresh); 56 backend + 22 frontend + 10 Pester tests
 - [ ] Phase 7 — Observability + Härtung
 
 ---

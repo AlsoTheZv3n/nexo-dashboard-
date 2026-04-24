@@ -25,6 +25,8 @@ public sealed class ExecutionRunner(
         using var scope = scopes.CreateScope();
         var executions = scope.ServiceProvider.GetRequiredService<IExecutionRepository>();
         var scripts = scope.ServiceProvider.GetRequiredService<IScriptRepository>();
+        var metrics = scope.ServiceProvider.GetRequiredService<IMetricsRepository>();
+        var clock = scope.ServiceProvider.GetRequiredService<IClock>();
 
         var execution = await executions.GetByIdAsync(executionId, cancellationToken);
         if (execution is null)
@@ -78,6 +80,26 @@ public sealed class ExecutionRunner(
         }
 
         await executions.UpdateAsync(execution, CancellationToken.None);
+        await EmitMetricsAsync(execution, metrics, clock);
+    }
+
+    private static async Task EmitMetricsAsync(PsExecution execution, IMetricsRepository metrics, IClock clock)
+    {
+        var now = clock.UtcNow;
+        var batch = new List<Metric>
+        {
+            new($"executions.{execution.Status.ToString().ToLowerInvariant()}", 1, now,
+                $"{{\"scriptId\":\"{execution.ScriptId}\"}}"),
+        };
+
+        if (execution.StartedAt is { } started && execution.CompletedAt is { } completed)
+        {
+            var durationSeconds = (completed - started).TotalSeconds;
+            batch.Add(new Metric("executions.duration_seconds", durationSeconds, now,
+                $"{{\"scriptId\":\"{execution.ScriptId}\"}}"));
+        }
+
+        await metrics.AddManyAsync(batch);
     }
 
     private static IReadOnlyDictionary<string, object?> DeserializeParameters(string json)
