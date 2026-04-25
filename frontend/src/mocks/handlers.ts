@@ -104,4 +104,8 @@ export const handlers = [
   http.get("/api/v1/health/ready", () =>
     HttpResponse.json({ status: "ready", db: "ok" }),
   ),
+
+  http.get("/api/v1/notifications", () =>
+    HttpResponse.json({ items: [], unreadCount: 0 }),
+  ),
 ];

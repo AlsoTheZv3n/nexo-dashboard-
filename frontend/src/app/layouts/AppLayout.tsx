@@ -2,6 +2,7 @@ import { Activity, Bell, Clock, Heart, KeyRound, LayoutDashboard, LogOut, Moon, 
 import { NavLink, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/AuthContext";
+import { NotificationBell } from "@/features/notifications/NotificationBell";
 import { useTheme } from "@/hooks/useTheme";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +67,7 @@ export function AppLayout() {
         <header className="flex h-14 items-center justify-between border-b bg-card px-4">
           <div className="text-sm text-muted-foreground md:hidden">Nexo Dashboard</div>
           <div className="ml-auto flex items-center gap-2">
+            <NotificationBell />
             <Button variant="ghost" size="icon" onClick={toggle} aria-label="Toggle theme">
               {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
