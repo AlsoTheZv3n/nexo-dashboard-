@@ -97,6 +97,63 @@ jobs:
           kubectl kustomize k8s/observability > /tmp/obs.yaml
           test -s /tmp/dev.yaml && test -s /tmp/prod.yaml && test -s /tmp/obs.yaml
 
+  e2e:
+    name: E2E (Playwright)
+    runs-on: ubuntu-latest
+    needs: [backend, frontend]
+    # E2E is informational: a flaky browser run shouldn't block a merge.
+    # Unit + integration + lint already gated the change at this point.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Boot the dev stack
+        run: docker compose -f docker-compose.dev.yml up -d --build
+      - name: Wait for the API + frontend
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8080/ >/dev/null \
+               && curl -fsS http://localhost:5000/api/v1/health/ready >/dev/null; then
+              echo "Stack is up."
+              exit 0
+            fi
+            echo "waiting (attempt $i)…"; sleep 5
+          done
+          echo "::error::Stack never came up"
+          docker compose -f docker-compose.dev.yml logs --tail=200 || true
+          exit 1
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+      - name: Install + Playwright browsers
+        working-directory: frontend
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright
+        working-directory: frontend
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:8080
+        run: pnpm test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+
+      - name: Tear down stack
+        if: always()
+        run: docker compose -f docker-compose.dev.yml down -v
+
   security-deps:
     name: Vulnerable dependencies (dotnet + pnpm)
     runs-on: ubuntu-latest
