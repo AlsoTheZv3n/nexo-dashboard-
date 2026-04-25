@@ -1,4 +1,4 @@
-import { Activity, Bell, Clock, KeyRound, LayoutDashboard, LogOut, Moon, ScrollText, Sun, Terminal, Users } from "lucide-react";
+import { Activity, Bell, Clock, Heart, KeyRound, LayoutDashboard, LogOut, Moon, ScrollText, Sun, Terminal, User as UserIcon, Users } from "lucide-react";
 import { NavLink, Outlet } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/features/auth/AuthContext";
@@ -22,6 +22,8 @@ const navItems: NavItem[] = [
   { to: "/audit", label: "Audit", icon: ScrollText },
   { to: "/users", label: "Users", icon: Users, adminOnly: true },
   { to: "/api-keys", label: "API keys", icon: KeyRound, adminOnly: true },
+  { to: "/health", label: "Health", icon: Heart },
+  { to: "/profile", label: "Profile", icon: UserIcon },
 ];
 
 export function AppLayout() {

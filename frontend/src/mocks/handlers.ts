@@ -97,4 +97,11 @@ export const handlers = [
       { scriptId: "s-2", name: "Get-DiskUsage", executions: 12 },
     ]),
   ),
+
+  http.get("/api/v1/health/live", () =>
+    HttpResponse.json({ status: "alive", at: new Date().toISOString() }),
+  ),
+  http.get("/api/v1/health/ready", () =>
+    HttpResponse.json({ status: "ready", db: "ok" }),
+  ),
 ];

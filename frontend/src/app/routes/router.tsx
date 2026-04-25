@@ -10,6 +10,9 @@ import { RequireAuth } from "@/features/auth/RequireAuth";
 import { DashboardPage } from "@/features/dashboard/DashboardPage";
 import { ExecutionDetailPage } from "@/features/executions/ExecutionDetailPage";
 import { ExecutionsPage } from "@/features/executions/ExecutionsPage";
+import { HealthPage } from "@/features/health/HealthPage";
+import { ProfilePage } from "@/features/profile/ProfilePage";
+import { ScriptDetailPage } from "@/features/scripts/ScriptDetailPage";
 import { ScriptsPage } from "@/features/scripts/ScriptsPage";
 
 export const router = createBrowserRouter([
@@ -24,7 +27,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: "scripts", element: <ScriptsPage /> },
-      { path: "scripts/:id", element: <ScriptsPage /> },
+      { path: "scripts/:id", element: <ScriptDetailPage /> },
       { path: "executions", element: <ExecutionsPage /> },
       { path: "executions/:id", element: <ExecutionDetailPage /> },
       { path: "schedules", element: <SchedulesPage /> },
@@ -32,6 +35,8 @@ export const router = createBrowserRouter([
       { path: "audit", element: <AuditLogPage /> },
       { path: "users", element: <UsersPage /> },
       { path: "api-keys", element: <ApiKeysPage /> },
+      { path: "health", element: <HealthPage /> },
+      { path: "profile", element: <ProfilePage /> },
       { path: "*", element: <Navigate to="/" replace /> },
     ],
   },

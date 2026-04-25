@@ -21,7 +21,9 @@ export interface PagedResponse<T> {
   total: number;
 }
 
-export async function fetchExecutions(params: { page?: number; pageSize?: number } = {}): Promise<PagedResponse<Execution>> {
+export async function fetchExecutions(
+  params: { page?: number; pageSize?: number; scriptId?: string; status?: ExecutionStatus } = {},
+): Promise<PagedResponse<Execution>> {
   const r = await api.get<PagedResponse<Execution>>("/v1/executions", { params });
   return r.data;
 }

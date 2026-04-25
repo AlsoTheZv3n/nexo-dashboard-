@@ -1,7 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchExecutions, type ExecutionStatus } from "./api";
+
+const PAGE_SIZE = 25;
 
 const statusColor: Record<ExecutionStatus, string> = {
   Pending: "bg-muted text-muted-foreground",
@@ -12,10 +17,15 @@ const statusColor: Record<ExecutionStatus, string> = {
 };
 
 export function ExecutionsPage() {
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["executions"],
-    queryFn: () => fetchExecutions({ page: 1, pageSize: 25 }),
+  const [page, setPage] = useState(1);
+  const { data, isLoading, error, isFetching } = useQuery({
+    queryKey: ["executions", page],
+    queryFn: () => fetchExecutions({ page, pageSize: PAGE_SIZE }),
+    placeholderData: (prev) => prev,
   });
+
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
     <div className="space-y-4">
@@ -70,6 +80,34 @@ export function ExecutionsPage() {
           </table>
         </div>
       )}
+
+      <div className="flex items-center justify-between">
+        <div className="text-xs text-muted-foreground" data-testid="page-summary">
+          Page {page} of {totalPages} · {total} total{isFetching ? " · loading…" : ""}
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page <= 1 || isFetching}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            aria-label="Previous page"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Prev
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={page >= totalPages || isFetching}
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            aria-label="Next page"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
