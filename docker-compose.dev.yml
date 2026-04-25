@@ -40,8 +40,13 @@ services:
       PowerShell__TimeoutSeconds: 60
       # Demo data: keep ON locally so the dashboard isn't empty. See docs/MOCK_DATA.md.
       Demo__SeedEnabled: "true"
-    ports:
-      - "5000:8080"
+    # Internal access only — the frontend container's nginx proxies /api/* to api:8080.
+    # If you want direct host-side access (e.g. for curl/Postman), uncomment the ports
+    # block, but watch out: Windows / IIS Express often holds 5000.
+    # ports:
+    #   - "5001:8080"
+    expose:
+      - "8080"
 
   frontend:
     build:
@@ -51,7 +56,9 @@ services:
     depends_on:
       - api
     ports:
-      - "8080:8080"
+      # 8080 frequently collides with local Keycloak/XAMPP/etc on dev machines.
+      # Override with FRONTEND_HOST_PORT env var if 8090 also conflicts.
+      - "${FRONTEND_HOST_PORT:-8090}:8080"
 
 volumes:
   pgdata:

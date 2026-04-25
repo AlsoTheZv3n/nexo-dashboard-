@@ -14,9 +14,14 @@ test.describe("Scripts", () => {
 
   test("global filter narrows the table", async ({ page }) => {
     await page.goto("/scripts");
-    await page.getByPlaceholder("Filter…").fill("Disk");
-    await expect(page.getByRole("link", { name: "Get-DiskUsage" })).toBeVisible();
+    // The TanStack global filter is substring-against-every-column. Picking
+    // "Network" because it only matches Test-NetworkConnectivity in the seeded
+    // dataset; "Disk" would falsely match Get-SystemHealth's German description
+    // ("CPU, RAM, Disk").
+    await page.getByPlaceholder("Filter…").fill("Network");
+    await expect(page.getByRole("link", { name: "Test-NetworkConnectivity" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Get-SystemHealth" })).not.toBeVisible();
+    await expect(page.getByRole("link", { name: "Get-DiskUsage" })).not.toBeVisible();
   });
 
   test("opening a script navigates to its detail page", async ({ page }) => {
